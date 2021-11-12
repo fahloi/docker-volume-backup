@@ -50,12 +50,15 @@ if [ -S "$DOCKER_SOCK" ]; then
   rm "$TEMPFILE"
 fi
 
-info "Creating backup"
-BACKUP_FILENAME="$(date +"${BACKUP_FILENAME:-backup-%Y-%m-%dT%H-%M-%S.tar.gz}")"
-TIME_BACK_UP="$(date +%s.%N)"
-tar -czvf "$BACKUP_FILENAME" $BACKUP_SOURCES # allow the var to expand, in case we have multiple sources
-BACKUP_SIZE="$(du --bytes $BACKUP_FILENAME | sed 's/\s.*$//')"
-TIME_BACKED_UP="$(date +%s.%N)"
+for BACKUP_SOURCE in $BACKUP_SOURCES
+do
+  info "Creating backup"
+  BACKUP_FILENAME="$(date +"${BACKUP_FILENAME:-$BACKUP_SOURCE-%Y-%m-%dT%H-%M-%S.tar.gz}")"
+  TIME_BACK_UP="$(date +%s.%N)"
+  tar -czvf "$BACKUP_FILENAME" $BACKUP_SOURCE # allow the var to expand, in case we have multiple sources
+  BACKUP_SIZE="$(du --bytes $BACKUP_FILENAME | sed 's/\s.*$//')"
+  TIME_BACKED_UP="$(date +%s.%N)"
+done
 
 if [ ! -z "$GPG_PASSPHRASE" ]; then
   info "Encrypting backup"
